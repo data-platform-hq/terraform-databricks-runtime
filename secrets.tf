@@ -1,9 +1,4 @@
 locals {
-  mount_sp_secrets = var.cloud_name == "azure" ? {
-    mount-sp-client-id = { value = var.mount_service_principal_client_id }
-    mount-sp-secret    = { value = var.mount_service_principal_secret }
-  } : {}
-
   secrets_acl_objects_list = flatten([for param in var.secret_scope : [
     for permission in param.acl : {
       scope = param.scope_name, principal = permission.principal, permission = permission.permission

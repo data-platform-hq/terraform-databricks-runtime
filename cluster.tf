@@ -21,15 +21,15 @@ resource "databricks_cluster" "this" {
   data_security_mode      = each.value.data_security_mode
   custom_tags             = var.cloud_name == "azure" && each.value.single_node_enable ? merge({ "ResourceClass" = "SingleNode" }, each.value.custom_tags) : each.value.custom_tags
 
-  # Azure conditional configuration for Spark Conf
-  spark_conf = var.cloud_name == "azure" ? merge(
+  # Conditional configuration for Spark Conf 
+  spark_conf = merge(
     each.value.single_node_enable == true ? local.spark_conf_single_node : {},
     each.value.spark_conf
-  ) : each.value.spark_conf
+  )
 
-  # Autoscaling block for AWS
+  # Autoscaling block 
   dynamic "autoscale" {
-    for_each = var.cloud_name == "aws" || !each.value.single_node_enable ? [1] : []
+    for_each = !each.value.single_node_enable ? [1] : []
     content {
       min_workers = each.value.min_workers
       max_workers = each.value.max_workers
