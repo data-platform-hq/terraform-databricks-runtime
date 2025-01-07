@@ -31,8 +31,8 @@ resource "databricks_secret" "main" {
 
   lifecycle {
     precondition {
-      condition     = var.cloud_name == "azure" && var.mount_enabled ? length(compact([var.mount_service_principal_client_id, var.mount_service_principal_secret, var.mount_service_principal_tenant_id])) == 3 : true
-      error_message = "To mount ADLS Storage, please provide prerequisite Service Principal values - 'mount_service_principal_object_id', 'mount_service_principal_secret', 'mount_service_principal_tenant_id'."
+      condition     = var.cloud_name == "azure" && var.mount_enabled ? length(compact([var.mount_configuration.service_principal.client_id, var.mount_configuration.service_principal.client_secret, var.mount_configuration.service_principal.tenant_id])) == 3 : true
+      error_message = "To mount ADLS Storage, please provide prerequisite Service Principal values - 'mount_configuration.service_principal.client_id', 'mount_configuration.service_principal.client_secret', 'mount_configuration.service_principal.tenant_id'."
     }
   }
 }

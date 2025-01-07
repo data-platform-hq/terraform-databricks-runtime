@@ -187,23 +187,23 @@ variable "mount_enabled" {
   default     = false
 }
 
-variable "mount_service_principal_client_id" {
-  type        = string
-  description = "Application(client) Id of Service Principal used to perform storage account mounting"
-  default     = null
-}
-
-variable "mount_service_principal_secret" {
-  type        = string
-  description = "Service Principal Secret used to perform storage account mounting"
-  default     = null
-  sensitive   = true
-}
-
-variable "mount_service_principal_tenant_id" {
-  type        = string
-  description = "Service Principal tenant id used to perform storage account mounting"
-  default     = null
+variable "mount_configuration" {
+  type = object({
+    service_principal = object({
+      client_id     = string
+      client_secret = string
+      tenant_id     = string
+    })
+  })
+  description = "Configuration for mounting storage, including only service principal details"
+  default = {
+    service_principal = {
+      client_id     = null
+      client_secret = null
+      tenant_id     = null
+    }
+  }
+  sensitive = true
 }
 
 variable "mountpoints" {
@@ -213,12 +213,6 @@ variable "mountpoints" {
   }))
   description = "Mountpoints for databricks"
   default     = {}
-}
-
-variable "mount_cluster_name" {
-  type        = string
-  description = "Name of the cluster that will be used during storage mounting. If mount_adls_passthrough == true, cluster should also have option cluster_conf_passthrought == true"
-  default     = null
 }
 
 variable "system_schemas" {
