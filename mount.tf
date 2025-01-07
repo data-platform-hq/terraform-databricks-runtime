@@ -6,7 +6,7 @@ locals {
 }
 
 resource "databricks_mount" "adls" {
-  for_each = var.mount_enabled && var.cloud_name == "azure" ? var.mount_configuration.mountpoints : {}
+  for_each = var.mount_enabled && var.cloud_name == "azure" ? var.mountpoints : {}
 
   name = each.key
   uri  = "abfss://${each.value["container_name"]}@${each.value["storage_account_name"]}.dfs.core.windows.net"
