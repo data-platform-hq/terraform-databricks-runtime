@@ -8,19 +8,21 @@ The main idea behind this module is to deploy resources for Databricks Workspace
 
 Here we provide some examples of how to provision it with a different options.
 
+### Example for Azure Cloud:
+
 ### In example below, these features of given module would be covered:
-1. Workspace admins assignment, custom Workspace group creation, group assignments, group entitlements
-2. Clusters (i.e., for Unity Catalog and Shared Autoscaling)             
-3. Workspace IP Access list creation                                     
-4. ADLS Gen2 Mount                                                       
-5. Create Secret Scope and assign permissions to custom groups                                                  
-6. SQL Endpoint creation and configuration                               
-7. Create Cluster policy                                                 
-8. Create an Azure Key Vault-backed secret scope                         
-9. Connect to already existing Unity Catalog Metastore                   
+1. Clusters (i.e., for Unity Catalog and Shared Autoscaling)             
+2. Workspace IP Access list creation                                     
+3. ADLS Gen2 Mount                                                       
+4. Create Secret Scope and assign permissions to custom groups                                                  
+5. SQL Endpoint creation and configuration                               
+6. Create Cluster policy                                                 
+7. Create an Azure Key Vault-backed secret scope                         
 
 ```hcl
 # Prerequisite resources
+
+variable "databricks_account_id" {}
 
 # Databricks Workspace with Premium SKU
 data "azurerm_databricks_workspace" "example" {
@@ -35,46 +37,73 @@ provider "databricks" {
   azure_workspace_resource_id = data.azurerm_databricks_workspace.example.id
 }
 
+# Databricks Account-Level Provider configuration
+provider "databricks" {
+  alias      = "account"
+  host       = "https://accounts.azuredatabricks.net"
+  account_id = var.databricks_account_id
+}
+
 # Key Vault where Service Principal's secrets are stored. Used for mounting Storage Container
 data "azurerm_key_vault" "example" {
   name                = "example-key-vault"
   resource_group_name = "example-rg"
 }
 
+locals {
+  databricks_iam_account_groups = [{
+    group_name  = "example-gn"
+    permissions = ["ADMIN"]
+    entitlements = [
+      "allow_instance_pool_create",
+      "allow_cluster_create",
+      "databricks_sql_access"
+    ]
+  }]  
+}
+
+# Assigns Databricks Account groups to Workspace. It is required to assign Unity Catalog Metastore before assigning Account groups to Workspace
+module "databricks_account_groups" {
+  count   = length(local.databricks_iam_account_groups) != 0 ? 1 : 0
+  source  = "data-platform-hq/databricks-account-groups/databricks"
+  version = "1.0.1"
+  
+  workspace_id               = data.azurerm_databricks_workspace.example.id
+  workspace_group_assignment = local.databricks_iam_account_groups
+
+  providers = {
+    databricks = databricks.account
+  }
+}
+
 # Example usage of module for Runtime Premium resources.
-module "databricks_runtime_premium" {
-  source  = "data-platform-hq/databricks-runtime-premium/databricks"
+module "databricks_runtime_premium" {  
+  source  = "data-platform-hq/runtime/databricks"
+  version = "~>1.0" 
 
   project  = "datahq"
   env      = "example"
   location = "eastus"
 
-  # Parameters of Service principal used for ADLS mount
-  # Imports App ID and Secret of Service Principal from target Key Vault
-  key_vault_id             =  data.azurerm_key_vault.example.id
-  sp_client_id_secret_name = "sp-client-id" # secret's name that stores Service Principal App ID
-  sp_key_secret_name       = "sp-key" # secret's name that stores Service Principal Secret Key
-  tenant_id_secret_name    = "infra-arm-tenant-id" # secret's name that stores tenant id value
+  # Cloud provider
+  cloud_name = "azure"
 
-  # 1.1 Workspace admins 
-  workspace_admins = {
-    user = ["user1@example.com"]
-    service_principal = ["example-app-id"]
+  # Example configuration for Workspace Groups
+  iam_workspace_groups = {
+    dev = {
+      user = [
+        "user1@example.com",
+        "user2@example.com"
+      ]
+      service_principal = []
+      entitlements = ["allow_instance_pool_create","allow_cluster_create","databricks_sql_access"]
+    }
   }
 
-  # 1.2 Custom Workspace group with assignments.
-  # In addition, provides an ability to create group and entitlements.
-  iam = [{
-    group_name = "DEVELOPERS"
-    permissions  = ["ADMIN"]
-    entitlements = [
-      "allow_instance_pool_create",
-      "allow_cluster_create",
-      "databricks_sql_access"
-    ] 
-  }]
+  # Example configuration for Account Groups
+  iam_account_groups = local.databricks_iam_account_groups
 
-  # 2. Databricks clusters configuration, and assign permission to a custom group on clusters.
+  # 1. Databricks clusters configuration, and assign permission to a custom group on clusters.
   databricks_cluster_configs = [ {
     cluster_name       = "Unity Catalog"
     data_security_mode = "USER_ISOLATION"
@@ -90,33 +119,39 @@ module "databricks_runtime_premium" {
     permissions        = [{group_name = "DEVELOPERS", permission_level = "CAN_MANAGE"}]
   }]
 
-  # 3. Workspace could be accessed only from these IP Addresses:
+  # 2. Workspace could be accessed only from these IP Addresses:
   ip_rules = {
     "ip_range_1" = "10.128.0.0/16",
     "ip_range_2" = "10.33.0.0/16",
   }
   
-  # 4. ADLS Gen2 Mount
+  # 3. ADLS Gen2 Mount
   mountpoints = {
     storage_account_name = data.azurerm_storage_account.example.name
     container_name       = "example_container"
   }
 
-  # 5. Create Secret Scope and assign permissions to custom groups 
+  # Parameters of Service principal used for ADLS mount
+  # Imports App ID and Secret of Service Principal from target Key Vault  
+  sp_client_id_secret_name = "sp-client-id" # secret's name that stores Service Principal App ID
+  sp_key_secret_name       = "sp-key" # secret's name that stores Service Principal Secret Key
+  tenant_id_secret_name    = "infra-arm-tenant-id" # secret's name that stores tenant id value 
+
+  # 4. Create Secret Scope and assign permissions to custom groups 
   secret_scope = [{
     scope_name = "extra-scope"
     acl        = [{ principal = "DEVELOPERS", permission = "READ" }] # Only custom workspace group names are allowed. If left empty then only Workspace admins could access these keys
     secrets    = [{ key = "secret-name", string_value = "secret-value"}]
   }]
 
-  # 6. SQL Warehouse Endpoint
+  # 5. SQL Warehouse Endpoint
   databricks_sql_endpoint = [{
     name        = "default"  
     enable_serverless_compute = true  
     permissions = [{ group_name = "DEVELOPERS", permission_level = "CAN_USE" },]
   }]
 
-  # 7. Databricks cluster policies
+  # 6. Databricks cluster policies
   custom_cluster_policies = [{
     name     = "custom_policy_1",
     can_use  =  "DEVELOPERS", # custom workspace group name, that is allowed to use this policy
@@ -129,7 +164,7 @@ module "databricks_runtime_premium" {
     }
   }]
 
-  # 8. Azure Key Vault-backed secret scope
+  # 7. Azure Key Vault-backed secret scope
   key_vault_secret_scope = [{
     name         = "external"
     key_vault_id = data.azurerm_key_vault.example.id
@@ -141,17 +176,174 @@ module "databricks_runtime_premium" {
   }
 }
 
-# 9 Assignment already existing Unity Catalog Metastore
-module "metastore_assignment" {
-  source  = "data-platform-hq/metastore-assignment/databricks"
+```
+
+### Example for AWS Cloud:
+
+### In example below, these features of given module would be covered:
+1. Clusters (i.e., for Unity Catalog and Shared Autoscaling)             
+2. Workspace IP Access list creation                                                                                 
+3. Create Secret Scope and assign permissions to custom groups                                                  
+4. SQL Endpoint creation and configuration                               
+5. Create Cluster policy                                                 
+
+```hcl
+
+# Prerequisite resources
+
+variable "databricks_account_id" {}
+variable "region" {}
+
+# Databricks Workspace ID
+data "databricks_mws_workspaces" "example" {
+  account_id = var.databricks_account_id
+}
+
+# Provider configuration for SSM
+provider "aws" {
+  alias  = "ssm"
+  region = var.region
+}
+
+# Databricks Account-Level Provider configuration
+provider "databricks" {
+  alias         = "mws"
+  host          = "https://accounts.cloud.databricks.com"
+  account_id    = data.aws_ssm_parameter.this["databricks_account_id"].value
+  client_id     = data.aws_ssm_parameter.this["databricks_admin_sp_id"].value
+  client_secret = data.aws_ssm_parameter.this["databricks_admin_sp_secret"].value
+}
+
+# Databricks Provider configuration
+provider "databricks" {
+  alias         = "workspace"
+  host          = module.databricks_workspace.workspace_url
+  client_id     = data.aws_ssm_parameter.this["databricks_admin_sp_id"].value
+  client_secret = data.aws_ssm_parameter.this["databricks_admin_sp_secret"].value
+}
+
+locals {
+  ssm_parameters = [
+    "databricks_account_id",
+    "databricks_admin_sp_id",
+    "databricks_admin_sp_secret",
+    "github_pat_token"
+  ]
+
+  ssm_parameters_prefix = "/example-prefix/" # Prefix for parameters stored in AWS SSM
+
+  dbx_runtime = {
+    iam_account_groups_assignment = [
+      { group_name = "example gm1", permissions = ["USER"] },
+      { group_name = "example gm2", permissions = ["USER"] }
+    ]
+
+    sql_endpoints = [{
+      name = "example_test"
+      permissions = [
+        { group_name = "example gm1", permission_level = "CAN_MANAGE" },
+      ]
+    }]
+
+    clusters = [{
+      cluster_name = "example1"
+      permissions = [
+        { group_name = "example gm2", permission_level = "CAN_RESTART" },
+      ]
+      }, {
+      cluster_name = "example2"
+      permissions = [
+        { group_name = "example gm2", permission_level = "CAN_RESTART" },
+        { group_name = "example gm1", permission_level = "CAN_MANAGE" },
+      ]
+    }]
+  }
+
+  databricks_custom_cluster_policies = [{
+    name       = null
+    can_use    = null
+    definition = null
+  }]
+
+  dbx_inputs = {
+    vpc_id             = "vpc-example"
+    subnet_ids         = ["subnet-example1", "subnet-example2"]
+    security_group_ids = ["sg-example"]
+  }
+
+  iam_default_permission_boundary_policy_arn = "arn:aws:iam::{ AWS Account ID }:policy/eo_role_boundary"
+}
+
+# SSM Parameter
+data "aws_ssm_parameter" "this" {
+  for_each = local.ssm_parameters
+  name = "${local.ssm_parameters_prefix}${each.key}"
+  provider = aws.ssm
+}
+
+# Label configuration
+module "label" {
+  source  = "cloudposse/label/null"
+  version = "0.25.0"
+
+  namespace   = "example-namespace" 
+  environment = "example-environment"
+  stage       = "example-stage"
+}
+
+# Databricks Workspace configuration
+module "databricks_workspace" {
+  source  = "data-platform-hq/aws-workspace/databricks"
+  version = "1.0.1"
+
+  label              = module.label.id
+  vpc_id             = local.dbx_inputs.vpc_id
+  subnet_ids         = local.dbx_inputs.subnet_ids
+  security_group_ids = local.dbx_inputs.security_group_ids
+  region             = var.region
+  account_id         = data.aws_ssm_parameter.this["databricks_account_id"].value
+  iam_cross_account_workspace_role_config = {
+    permission_boundary_arn = local.iam_default_permission_boundary_policy_arn    
+  }
+
+  providers = {
+    databricks = databricks.mws
+  }
+}
+
+# Account level group assignment to the Workspace
+module "databricks_account_groups" {
+  source  = "data-platform-hq/databricks-account-groups/databricks"
+  version = "1.0.1"
+
+  workspace_id               = module.databricks_workspace.workspace_id
+  workspace_group_assignment = local.dbx_runtime.iam_account_groups_assignment
+
+  providers = {
+    databricks = databricks.mws
+  }
+}
+
+# Databricks Runtime resources configuration (clusters, sql, secrets, etc.)
+module "databricks_runtime" {  
+  source  = "data-platform-hq/runtime/databricks"
   version = "1.0.0"
 
-  workspace_id = data.azurerm_databricks_workspace.example.workspace_id
-  metastore_id = "<uuid-of-metastore>"
+  clusters                      = local.dbx_runtime.clusters
+  sql_endpoint                  = local.dbx_runtime.sql_endpoints
+  secret_scope                  = flatten([var.dbx_runtime.secret_scopes, local.demo_wwi_secret_scope])
+  workspace_admin_token_enabled = var.workspace_admin_token_enabled
+  system_schemas_enabled        = alltrue([var.databricks_system_schemas_enabled])
+
+  iam_account_groups      = local.dbx_runtime.iam_account_groups_assignment
+  cloud_name              = "aws"
+  custom_cluster_policies = local.databricks_custom_cluster_policies
 
   providers = {
     databricks = databricks.workspace
   }
+
+  depends_on = [module.databricks_workspace, module.databricks_account_groups]
 }
 
 ```
@@ -161,7 +353,7 @@ module "metastore_assignment" {
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.3 |
 | <a name="requirement_databricks"></a> [databricks](#requirement\_databricks) | ~>1.0 |
 
 ## Providers
