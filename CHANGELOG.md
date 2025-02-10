@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/data-platform-hq/terraform-databricks-runtime/compare/v1.0.0...v1.0.1) (2025-02-10)
+
+
+### Bug Fixes
+
+* upgrade to terraform v1.3 and update readme ([728ad51](https://github.com/data-platform-hq/terraform-databricks-runtime/commit/728ad51927ca0d53759481ec6f52564e368289f6))
+
 # 1.0.0 (2025-01-09)
 
 
