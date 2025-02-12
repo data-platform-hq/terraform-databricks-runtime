@@ -218,7 +218,7 @@ variable "mountpoints" {
 variable "system_schemas" {
   type        = set(string)
   description = "Set of strings with all possible System Schema names"
-  default     = ["access", "billing", "compute", "marketplace", "storage"]
+  default     = ["access", "compute", "marketplace", "storage"]
 }
 
 variable "system_schemas_enabled" {
