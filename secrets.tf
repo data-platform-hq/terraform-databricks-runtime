@@ -1,6 +1,6 @@
 locals {
   secrets_acl_objects_list = flatten([for param in var.secret_scope : [
-    for permission in param.acl : {
+    for permission in param.scope_acl : {
       scope = param.scope_name, principal = permission.principal, permission = permission.permission
     }] if param.scope_acl != null
   ])
@@ -12,6 +12,25 @@ locals {
     secret_key   = secret.key,
     secret_value = secret.string_value,
   }]]) : "${object.scope_name}:${object.secret_key}" => object }
+
+  secret_scopes_combined = merge(
+    {
+      for param in var.secret_scope : param.scope_name => {
+        scope_name   = param.scope_name
+        secrets      = param.secrets != null ? param.secrets : []
+        key_vault_id = null
+        dns_name     = null
+      } if param.scope_name != null
+    },
+    var.cloud_name == "azure" ? {
+      for kv in var.key_vault_secret_scope : kv.name => {
+        scope_name   = kv.name
+        secrets      = []
+        key_vault_id = kv.key_vault_id
+        dns_name     = kv.dns_name
+      } if kv.name != null
+    } : {}
+  )
 }
 
 # Secret Scope with SP secrets for mounting Azure Data Lake Storage
@@ -39,16 +58,12 @@ resource "databricks_secret" "main" {
 
 # Custom additional Databricks Secret Scope
 resource "databricks_secret_scope" "this" {
-  for_each = {
-    for param in var.secret_scope : (param.scope_name) => param
-    if param.scope_name != null
-  }
+  for_each = local.secret_scopes_combined
 
-  name = each.key
+  name = each.value.scope_name
 
-  # Key Vault metadata block only for Azure
   dynamic "keyvault_metadata" {
-    for_each = var.cloud_name == "azure" ? [for kv in var.key_vault_secret_scope : kv] : []
+    for_each = each.value.key_vault_id != null ? [each.value] : []
     content {
       resource_id = keyvault_metadata.value.key_vault_id
       dns_name    = keyvault_metadata.value.dns_name
@@ -69,7 +84,7 @@ resource "databricks_secret" "this" {
 
 resource "databricks_secret_acl" "this" {
   for_each = var.cloud_name == "azure" && length(local.secrets_acl_objects_list) > 0 ? {
-    for_each = { for entry in local.secrets_acl_objects_list : "${entry.scope}.${entry.principal}.${entry.permission}" => entry }
+    for entry in local.secrets_acl_objects_list : "${entry.scope}.${entry.principal}.${entry.permission}" => entry
   } : {}
 
   scope      = databricks_secret_scope.this[each.value.scope].name
