@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/data-platform-hq/terraform-databricks-runtime/compare/v1.0.2...v1.0.3) (2025-06-12)
+
+
+### Bug Fixes
+
+* added secret scopes combined ([b30abb6](https://github.com/data-platform-hq/terraform-databricks-runtime/commit/b30abb6ace44ac2661a686997a36f18a1227ddb8))
+
 ## [1.0.2](https://github.com/data-platform-hq/terraform-databricks-runtime/compare/v1.0.1...v1.0.2) (2025-02-12)
 
 
