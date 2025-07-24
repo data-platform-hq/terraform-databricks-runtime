@@ -272,3 +272,23 @@ variable "ip_addresses" {
     "all" = "0.0.0.0/0"
   }
 }
+
+variable "lakebase_instance" {
+  type = map(object({
+    name                        = string
+    capacity                    = optional(string, "CU_1")
+    node_count                  = optional(number, 1)
+    enable_readable_secondaries = optional(bool, false)
+    retention_window_in_days    = optional(number, 7)
+  }))
+  default     = {}
+  description = <<DESCRIPTION
+Map of objects with parameters to configure and deploy OLTP database instances in Databricks.
+To deploy and use an OLTP database instance in Databricks:
+- You must be a Databricks workspace owner.
+- A Databricks workspace must already be deployed in your cloud environment (e.g., AWS or Azure).
+- The workspace must be on the Premium plan or above.
+- You must enable the "Lakebase: Managed Postgres OLTP Database" feature in the Preview features section.
+- Database instances can only be deleted manually through the Databricks UI or using the Databricks CLI with the --purge option.
+DESCRIPTION
+}
