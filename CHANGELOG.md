@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/data-platform-hq/terraform-databricks-runtime/compare/v1.0.3...v1.1.0) (2025-07-28)
+
+
+### Features
+
+* added lakebase instance ([b3cd7d3](https://github.com/data-platform-hq/terraform-databricks-runtime/commit/b3cd7d369a5edbbec3241ff04fb4ad46e87a8bb8))
+
 ## [1.0.3](https://github.com/data-platform-hq/terraform-databricks-runtime/compare/v1.0.2...v1.0.3) (2025-06-12)
 
 
