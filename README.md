@@ -354,13 +354,13 @@ module "databricks_runtime" {
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.3 |
-| <a name="requirement_databricks"></a> [databricks](#requirement\_databricks) | ~>1.0 |
+| <a name="requirement_databricks"></a> [databricks](#requirement\_databricks) | >=1.85.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_databricks"></a> [databricks](#provider\_databricks) | ~>1.0 |
+| <a name="provider_databricks"></a> [databricks](#provider\_databricks) | >=1.85.0 |
 
 ## Modules
 
@@ -373,6 +373,7 @@ No modules.
 | [databricks_cluster.this](https://registry.terraform.io/providers/databricks/databricks/latest/docs/resources/cluster) | resource |
 | [databricks_cluster_policy.overrides](https://registry.terraform.io/providers/databricks/databricks/latest/docs/resources/cluster_policy) | resource |
 | [databricks_cluster_policy.this](https://registry.terraform.io/providers/databricks/databricks/latest/docs/resources/cluster_policy) | resource |
+| [databricks_database_instance.this](https://registry.terraform.io/providers/databricks/databricks/latest/docs/resources/database_instance) | resource |
 | [databricks_entitlements.this](https://registry.terraform.io/providers/databricks/databricks/latest/docs/resources/entitlements) | resource |
 | [databricks_group.this](https://registry.terraform.io/providers/databricks/databricks/latest/docs/resources/group) | resource |
 | [databricks_ip_access_list.allowed_list](https://registry.terraform.io/providers/databricks/databricks/latest/docs/resources/ip_access_list) | resource |
@@ -406,6 +407,7 @@ No modules.
 | <a name="input_iam_workspace_groups"></a> [iam\_workspace\_groups](#input\_iam\_workspace\_groups) | Used to create workspace group. Map of group name and its parameters, such as users and service principals added to the group. Also possible to configure group entitlements. | <pre>map(object({<br/>    user              = optional(list(string))<br/>    service_principal = optional(list(string))<br/>    entitlements      = optional(list(string))<br/>  }))</pre> | `{}` | no |
 | <a name="input_ip_addresses"></a> [ip\_addresses](#input\_ip\_addresses) | A map of IP address ranges | `map(string)` | <pre>{<br/>  "all": "0.0.0.0/0"<br/>}</pre> | no |
 | <a name="input_key_vault_secret_scope"></a> [key\_vault\_secret\_scope](#input\_key\_vault\_secret\_scope) | Object with Azure Key Vault parameters required for creation of Azure-backed Databricks Secret scope | <pre>list(object({<br/>    name         = string<br/>    key_vault_id = string<br/>    dns_name     = string<br/>    tenant_id    = string<br/>  }))</pre> | `[]` | no |
+| <a name="input_lakebase_instance"></a> [lakebase\_instance](#input\_lakebase\_instance) | Map of objects with parameters to configure and deploy OLTP database instances in Databricks.<br/>To deploy and use an OLTP database instance in Databricks:<br/>- You must be a Databricks workspace owner.<br/>- A Databricks workspace must already be deployed in your cloud environment (e.g., AWS or Azure).<br/>- The workspace must be on the Premium plan or above.<br/>- You must enable the "Lakebase: Managed Postgres OLTP Database" feature in the Preview features section.<br/>- Database instances can only be deleted manually through the Databricks UI or using the Databricks CLI with the --purge option. | <pre>map(object({<br/>    name                        = string<br/>    capacity                    = optional(string, "CU_1")<br/>    node_count                  = optional(number, 1)<br/>    enable_readable_secondaries = optional(bool, false)<br/>    retention_window_in_days    = optional(number, 7)<br/>  }))</pre> | `{}` | no |
 | <a name="input_mount_configuration"></a> [mount\_configuration](#input\_mount\_configuration) | Configuration for mounting storage, including only service principal details | <pre>object({<br/>    service_principal = object({<br/>      client_id     = string<br/>      client_secret = string<br/>      tenant_id     = string<br/>    })<br/>  })</pre> | <pre>{<br/>  "service_principal": {<br/>    "client_id": null,<br/>    "client_secret": null,<br/>    "tenant_id": null<br/>  }<br/>}</pre> | no |
 | <a name="input_mount_enabled"></a> [mount\_enabled](#input\_mount\_enabled) | Boolean flag that determines whether mount point for storage account filesystem is created | `bool` | `false` | no |
 | <a name="input_mountpoints"></a> [mountpoints](#input\_mountpoints) | Mountpoints for databricks | <pre>map(object({<br/>    storage_account_name = string<br/>    container_name       = string<br/>  }))</pre> | `{}` | no |
