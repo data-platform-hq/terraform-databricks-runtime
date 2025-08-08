@@ -16,8 +16,8 @@ resource "databricks_token" "pat" {
   lifetime_seconds = var.pat_token_lifetime_seconds
 }
 
-resource "databricks_system_schema" "this" {
-  for_each = var.system_schemas_enabled ? var.system_schemas : toset([])
-
-  schema = each.value
+resource "databricks_disable_legacy_dbfs_setting" "this" {
+  disable_legacy_dbfs {
+    value = var.disable_legacy_dbfs
+  }
 }

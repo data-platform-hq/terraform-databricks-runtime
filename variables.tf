@@ -215,18 +215,6 @@ variable "mountpoints" {
   default     = {}
 }
 
-variable "system_schemas" {
-  type        = set(string)
-  description = "Set of strings with all possible System Schema names"
-  default     = ["access", "compute", "marketplace", "storage", "serving", "query", "lakeflow"]
-}
-
-variable "system_schemas_enabled" {
-  type        = bool
-  description = "System Schemas only works with assigned Unity Catalog Metastore. Boolean flag to enabled this feature"
-  default     = false
-}
-
 variable "default_cluster_policies_override" {
   type = list(object({
     name       = string
@@ -290,5 +278,18 @@ To deploy and use an OLTP database instance in Databricks:
 - The workspace must be on the Premium plan or above.
 - You must enable the "Lakebase: Managed Postgres OLTP Database" feature in the Preview features section.
 - Database instances can only be deleted manually through the Databricks UI or using the Databricks CLI with the --purge option.
+DESCRIPTION
+}
+
+# Disable access to DBFS root
+variable "disable_legacy_dbfs" {
+  type        = bool
+  default     = false
+  description = <<DESCRIPTION
+Disables access to DBFS root and mounts in your existing Databricks workspace.
+When set to true:
+- Access to DBFS root and mounted paths is blocked.
+- Manual restart of all-purpose compute clusters and SQL warehouses is required after enabling this setting.
+- Note: This setting only takes effect when disabling access. Re-enabling must be done manually via the Databricks UI.
 DESCRIPTION
 }
