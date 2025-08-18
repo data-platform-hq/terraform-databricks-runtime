@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/data-platform-hq/terraform-databricks-runtime/compare/v1.1.0...v1.2.0) (2025-08-18)
+
+
+### Features
+
+* disable access to DBFS root ([7074041](https://github.com/data-platform-hq/terraform-databricks-runtime/commit/707404115aa70847ffde72d10d99041f91537f7e))
+
 # [1.1.0](https://github.com/data-platform-hq/terraform-databricks-runtime/compare/v1.0.3...v1.1.0) (2025-07-28)
 
 
