@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/data-platform-hq/terraform-databricks-runtime/compare/v1.2.0...v1.3.0) (2026-02-02)
+
+
+### Features
+
+* upgrade provider to Databricks v1.0 ([8965b3e](https://github.com/data-platform-hq/terraform-databricks-runtime/commit/8965b3e94933ffa7f5232021b168bb280742c322))
+
 # [1.2.0](https://github.com/data-platform-hq/terraform-databricks-runtime/compare/v1.1.0...v1.2.0) (2025-08-18)
 
 
