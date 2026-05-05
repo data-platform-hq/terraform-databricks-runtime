@@ -119,7 +119,7 @@ EOT
 variable "clusters" {
   type = set(object({
     cluster_name       = string
-    spark_version      = optional(string, "15.3.x-scala2.12")
+    spark_version      = optional(string, "18.1.x-scala2.13")
     spark_conf         = optional(map(any), {})
     spark_env_vars     = optional(map(any), {})
     data_security_mode = optional(string, "USER_ISOLATION")
