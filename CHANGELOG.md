@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/data-platform-hq/terraform-databricks-runtime/compare/v1.3.0...v1.4.0) (2026-05-13)
+
+
+### Features
+
+* upgrade default spark version to 18.1 ([1e3ab47](https://github.com/data-platform-hq/terraform-databricks-runtime/commit/1e3ab476287420d9ef73b0ad5f7ca0490bdad5d1))
+
 # [1.3.0](https://github.com/data-platform-hq/terraform-databricks-runtime/compare/v1.2.0...v1.3.0) (2026-02-02)
 
 
