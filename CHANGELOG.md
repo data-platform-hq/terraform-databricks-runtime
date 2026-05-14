@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/data-platform-hq/terraform-databricks-runtime/compare/v1.4.0...v1.4.1) (2026-05-14)
+
+
+### Bug Fixes
+
+* added compact to ip_addresses value ([8b9e660](https://github.com/data-platform-hq/terraform-databricks-runtime/commit/8b9e660f6ae780d680d7b581f2c443452b735f93))
+
 # [1.4.0](https://github.com/data-platform-hq/terraform-databricks-runtime/compare/v1.3.0...v1.4.0) (2026-05-13)
 
 
