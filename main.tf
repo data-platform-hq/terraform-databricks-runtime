@@ -5,7 +5,7 @@ resource "databricks_workspace_conf" "this" {
 resource "databricks_ip_access_list" "allowed_list" {
   label        = "allow_in"
   list_type    = "ALLOW"
-  ip_addresses = flatten([for v in values(var.ip_addresses) : v])
+  ip_addresses = flatten([for v in compact(values(var.ip_addresses)) : v])
 
   depends_on = [databricks_workspace_conf.this]
 }
