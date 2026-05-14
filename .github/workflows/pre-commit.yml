@@ -4,4 +4,4 @@ on: [pull_request]
 
 jobs:
   pre-commit:
-    uses: data-platform-hq/terraform-cicd-actions/.github/workflows/terraform-pre-commit.yml@main
+    uses: data-platform-hq/terraform-cicd-actions/.github/workflows/terraform-pre-commit.yaml@main
