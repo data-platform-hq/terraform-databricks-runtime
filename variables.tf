@@ -268,17 +268,32 @@ variable "lakebase_instance" {
     node_count                  = optional(number, 1)
     enable_readable_secondaries = optional(bool, false)
     retention_window_in_days    = optional(number, 7)
+    enable_pg_native_login      = optional(bool, false)
+    purge_on_delete             = optional(bool, false)
+
+    catalogs = optional(list(object({
+      name                          = string
+      database_name                 = string
+      create_database_if_not_exists = optional(bool, true)
+      grants = optional(list(object({
+        principal  = string
+        privileges = list(string)
+      })), [])
+    })), [])
+
+    access_control = optional(list(object({
+      user_name        = string
+      permission_level = string
+    })), [])
   }))
   default     = {}
   description = <<DESCRIPTION
-Map of objects with parameters to configure and deploy OLTP database instances in Databricks.
-To deploy and use an OLTP database instance in Databricks:
-- You must be a Databricks workspace owner.
-- A Databricks workspace must already be deployed in your cloud environment (e.g., AWS or Azure).
-- The workspace must be on the Premium plan or above.
-- You must enable the "Lakebase: Managed Postgres OLTP Database" feature in the Preview features section.
-- Database instances can only be deleted manually through the Databricks UI or using the Databricks CLI with the --purge option.
-DESCRIPTION
+Map of objects with parameters to configure and deploy Databricks Lakebase (Managed Postgres OLTP) instances,
+including instance settings, catalogs, grants, and access control.
+
+Notes:
+- Supports optional catalog creation with grants and instance-level access control.
+DESCRIPTION  
 }
 
 # Disable access to DBFS root
