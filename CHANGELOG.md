@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/data-platform-hq/terraform-databricks-runtime/compare/v1.4.1...v1.5.0) (2026-05-20)
+
+
+### Features
+
+* added workspace base environments ([5a29dfa](https://github.com/data-platform-hq/terraform-databricks-runtime/commit/5a29dfaf2be7f9530f72ce7aca506a20123e1152))
+
 ## [1.4.1](https://github.com/data-platform-hq/terraform-databricks-runtime/compare/v1.4.0...v1.4.1) (2026-05-14)
 
 
