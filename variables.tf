@@ -293,3 +293,26 @@ When set to true:
 - Note: This setting only takes effect when disabling access. Re-enabling must be done manually via the Databricks UI.
 DESCRIPTION
 }
+
+# Workspace environments
+variable "workspace_base_environments" {
+  description = <<DESCRIPTION
+Workspace base environments configuration.
+Base environments require environment definition files (YAML) to exist and be accessible before Terraform creates the base environment resources.
+Prerequisites:
+- CPU environment files can be stored either in a workspace directory or in a Databricks volume.
+- GPU environment files can only be stored in a workspace directory.
+Examples:
+- Workspace path: /Workspace/path/to/environment.yaml
+- Volume path: /Volumes/<catalog>/<schema>/<volume>/environment.yaml
+set_as_default specifies whether the environment should be used as the workspace default environment.
+DESCRIPTION
+  type = map(object({
+    display_name          = string
+    filepath              = string
+    base_environment_type = optional(string, "CPU")
+    set_as_default        = optional(bool, false)
+  }))
+
+  default = {}
+}
