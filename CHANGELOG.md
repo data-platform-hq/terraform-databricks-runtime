@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/data-platform-hq/terraform-databricks-runtime/compare/v1.5.0...v1.6.0) (2026-05-26)
+
+
+### Features
+
+* dbfs disable legacy default true ([203223d](https://github.com/data-platform-hq/terraform-databricks-runtime/commit/203223dc50739d9729bfd51f47a4cc95da3fce0e))
+
 # [1.5.0](https://github.com/data-platform-hq/terraform-databricks-runtime/compare/v1.4.1...v1.5.0) (2026-05-20)
 
 
