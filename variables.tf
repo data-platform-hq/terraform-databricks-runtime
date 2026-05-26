@@ -284,7 +284,7 @@ DESCRIPTION
 # Disable access to DBFS root
 variable "disable_legacy_dbfs" {
   type        = bool
-  default     = false
+  default     = true
   description = <<DESCRIPTION
 Disables access to DBFS root and mounts in your existing Databricks workspace.
 When set to true:
