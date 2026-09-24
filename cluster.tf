@@ -16,7 +16,7 @@ resource "databricks_cluster" "this" {
 
   cluster_name            = each.value.cluster_name
   spark_version           = each.value.spark_version
-  node_type_id            = coalesce(each.value.node_type_id, local.default_node_type_ids["${var.cloud_name}_node_type_id"])
+  node_type_id            = var.cloud_name == "gcp" ? each.value.node_type_id : coalesce(each.value.node_type_id, local.default_node_type_ids["${var.cloud_name}_node_type_id"])
   autotermination_minutes = each.value.autotermination_minutes
   data_security_mode      = each.value.data_security_mode
   custom_tags             = var.cloud_name == "azure" && each.value.single_node_enable ? merge({ "ResourceClass" = "SingleNode" }, each.value.custom_tags) : each.value.custom_tags
@@ -26,6 +26,8 @@ resource "databricks_cluster" "this" {
     each.value.single_node_enable == true ? local.spark_conf_single_node : {},
     each.value.spark_conf
   )
+
+  spark_env_vars = each.value.spark_env_vars
 
   # Autoscaling block 
   dynamic "autoscale" {
@@ -60,12 +62,22 @@ resource "databricks_cluster" "this" {
     }
   }
 
+  # Specific attributes for GCP
+  dynamic "gcp_attributes" {
+    for_each = var.cloud_name == "gcp" ? [each.value] : []
+    content {
+      google_service_account = each.value.google_service_account
+      availability           = each.value.availability
+      zone_id                = each.value.zone_id
+    }
+  }
+
   # Specific configurations
   dynamic "cluster_log_conf" {
-    for_each = var.cloud_name == "azure" && each.value.cluster_log_conf_destination != null ? [each.value.cluster_log_conf_destination] : []
+    for_each = each.value.cluster_log_conf_destination != null ? [each.value.cluster_log_conf_destination] : []
     content {
       dynamic "dbfs" {
-        for_each = var.cloud_name == "azure" ? [1] : []
+        for_each = var.cloud_name == "azure" || var.cloud_name == "gcp" ? [1] : []
         content {
           destination = cluster_log_conf.value
         }
@@ -136,6 +148,12 @@ resource "databricks_cluster" "this" {
         exclusions  = library.value.exclusions
       }
     }
+  }
+
+  lifecycle {
+    ignore_changes = [
+      state
+    ]
   }
 }
 

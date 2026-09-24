@@ -72,7 +72,11 @@ resource "databricks_secret_scope" "this" {
 
   # This property is only relevant for Azure
   initial_manage_principal = var.cloud_name == "azure" ? null : null
+
+  # This property is only relevant for GCP
+  backend_type = var.cloud_name == "gcp" ? "DATABRICKS" : null
 }
+
 
 resource "databricks_secret" "this" {
   for_each = local.secret_scope_config_secrets
@@ -83,8 +87,11 @@ resource "databricks_secret" "this" {
 }
 
 resource "databricks_secret_acl" "this" {
-  for_each = var.cloud_name == "azure" && length(local.secrets_acl_objects_list) > 0 ? {
-    for entry in local.secrets_acl_objects_list : "${entry.scope}.${entry.principal}.${entry.permission}" => entry
+  for_each = ((var.cloud_name == "azure" || var.cloud_name == "gcp")
+    && length(local.secrets_acl_objects_list) > 0
+    ) ? {
+    for entry in local.secrets_acl_objects_list :
+    "${entry.scope}.${entry.principal}.${entry.permission}" => entry
   } : {}
 
   scope      = databricks_secret_scope.this[each.value.scope].name

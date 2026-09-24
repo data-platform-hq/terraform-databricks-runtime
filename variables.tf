@@ -123,6 +123,17 @@ variable "clusters" {
     spark_conf         = optional(map(any), {})
     spark_env_vars     = optional(map(any), {})
     data_security_mode = optional(string, "USER_ISOLATION")
+
+    node_type_id            = optional(string, null)
+    autotermination_minutes = optional(number, 20)
+
+    min_workers = optional(number, 1)
+    max_workers = optional(number, 2)
+
+    single_node_enable = optional(bool, false)
+    single_user_name   = optional(string, null)
+
+    # AWS-specific attributes
     aws_attributes = optional(object({
       availability           = optional(string)
       zone_id                = optional(string)
@@ -140,6 +151,8 @@ variable "clusters" {
       ebs_volume_size        = 100
       ebs_volume_type        = "GENERAL_PURPOSE_SSD"
     })
+
+    # Azure-specific attributes
     azure_attributes = optional(object({
       availability       = optional(string)
       first_on_demand    = optional(number)
@@ -148,30 +161,42 @@ variable "clusters" {
       availability    = "ON_DEMAND_AZURE"
       first_on_demand = 0
     })
-    node_type_id                 = optional(string, null)
-    autotermination_minutes      = optional(number, 20)
-    min_workers                  = optional(number, 1)
-    max_workers                  = optional(number, 2)
+
+    # GCP-specific attributes
+    google_service_account = optional(string, null)
+    availability           = optional(string, "PREEMPTIBLE_WITH_FALLBACK_GCP")
+    zone_id                = optional(string, null)
+
+    # Cluster logs
     cluster_log_conf_destination = optional(string, null)
-    init_scripts_workspace       = optional(set(string), [])
-    init_scripts_volumes         = optional(set(string), [])
-    init_scripts_dbfs            = optional(set(string), [])
-    init_scripts_abfss           = optional(set(string), [])
-    single_user_name             = optional(string, null)
-    single_node_enable           = optional(bool, false)
-    custom_tags                  = optional(map(string), {})
+
+    # Init scripts
+    init_scripts_workspace = optional(set(string), [])
+    init_scripts_volumes   = optional(set(string), [])
+    init_scripts_dbfs      = optional(set(string), [])
+    init_scripts_abfss     = optional(set(string), [])
+
+    # Tags
+    custom_tags = optional(map(string), {})
+
+    # Permissions
     permissions = optional(set(object({
       group_name       = string
       permission_level = string
     })), [])
+
+    # Libraries
     pypi_library_repository = optional(set(string), [])
+
     maven_library_repository = optional(set(object({
       coordinates = string
       exclusions  = set(string)
     })), [])
   }))
-  description = "Set of objects with parameters to configure Databricks clusters and assign permissions to it for certain custom groups"
-  default     = []
+
+  description = "Set of objects with parameters to configure Databricks clusters and assign permissions to certain custom groups"
+
+  default = []
 }
 
 variable "pat_token_lifetime_seconds" {

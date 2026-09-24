@@ -12,10 +12,10 @@ jobs:
 
     steps:
     - name: Checkout code repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v5
 
     - name: Run security KICS scaner
-      uses: checkmarx/kics-github-action@v2
+      uses: checkmarx/kics-github-action@v2.1.20
       with:
         path: .
         output_path: myResults/
