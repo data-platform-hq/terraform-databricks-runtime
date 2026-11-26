@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/data-platform-hq/terraform-databricks-runtime/compare/v1.6.0...v1.7.0) (2026-11-26)
+
+
+### Features
+
+* add-gcp-configuration ([1e7b1b9](https://github.com/data-platform-hq/terraform-databricks-runtime/commit/1e7b1b96bb7fa1f8dd74d2d29caea8015120fc1a))
+
 # [1.6.0](https://github.com/data-platform-hq/terraform-databricks-runtime/compare/v1.5.0...v1.6.0) (2026-05-26)
 
 
