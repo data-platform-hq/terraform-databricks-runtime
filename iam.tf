@@ -6,7 +6,9 @@ locals {
 }
 
 resource "databricks_group" "this" {
-  count = var.cloud_name == "azure" && length(local.iam_account_map) == 0 ? length(toset(keys(var.iam_workspace_groups))) : 0
+  count = ((var.cloud_name == "azure" || var.cloud_name == "gcp")
+    && length(local.iam_account_map) == 0
+  ) ? length(toset(keys(var.iam_workspace_groups))) : 0
 
   display_name = keys(var.iam_workspace_groups)[count.index]
 
